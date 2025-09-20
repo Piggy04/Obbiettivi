@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Obiettivi e Livelli</title>
   <style>
     body {
@@ -16,11 +17,12 @@
     }
     .container {
       background: #fff;
-      margin-top: 40px;
-      padding: 25px;
+      margin-top: 20px;
+      padding: 20px;
       border-radius: 16px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      width: 440px;
+      width: 90%;
+      max-width: 500px;
       animation: fadeIn 0.5s ease-in-out;
     }
     @keyframes fadeIn {
@@ -34,12 +36,13 @@
     .hidden { display: none; }.goal {
   position: relative;
   background: #f4f7fb;
-  padding: 12px;
-  margin: 8px 0;
+  padding: 14px;
+  margin: 10px 0;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   overflow: hidden;
   touch-action: pan-y;
+  font-size: 1rem;
 }
 .goal-content {
   display: flex;
@@ -54,14 +57,15 @@
   transform: translateY(-50%);
   background: #f44336;
   border: none;
-  padding: 6px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   transition: right 0.3s ease;
+  font-size: 0.9rem;
 }
 .goal.show-delete .goal-content {
-  transform: translateX(-60px);
+  transform: translateX(-70px);
 }
 .goal.show-delete .delete-btn {
   right: 10px;
@@ -69,24 +73,26 @@
 button {
   background: #4cafef;
   border: none;
-  padding: 6px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   color: white;
   cursor: pointer;
   transition: background 0.2s;
+  font-size: 1rem;
 }
 button:hover { background: #3b8bd4; }
 select, input {
-  margin: 5px 0;
-  padding: 8px;
+  margin: 6px 0;
+  padding: 10px;
   width: 100%;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 1rem;
 }
 .progress-bar {
-  height: 20px;
+  height: 24px;
   background: #ddd;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   margin: 15px 0;
 }
@@ -101,11 +107,11 @@ select, input {
   padding: 10px;
   margin: 6px 0;
   border-radius: 8px;
-  font-size: 0.9em;
+  font-size: 0.95rem;
 }
 
   </style>
-<link rel="icon" type="image/x-icon" href="favicon.png">
+  <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
   <div class="container">
@@ -195,7 +201,6 @@ select, input {
       if (goal.done) {
         points -= goal.points;
         if (points < 0) points = 0;
-        // rimuovi anche dallo storico
         history = history.filter(item => item.text !== goal.text || item.points !== goal.points);
         localStorage.setItem("points", points);
         localStorage.setItem("history", JSON.stringify(history));
@@ -210,11 +215,9 @@ select, input {
       let level = Math.floor(points / 100) + 1;
       document.getElementById("level").innerText = level;
 
-      // Barra di progresso verso il prossimo livello
       let progress = (points % 100);
       document.getElementById("progressFill").style.width = progress + "%";
 
-      // Lista obiettivi
       const goalList = document.getElementById("goalList");
       goalList.innerHTML = "";
       goals.forEach((goal, index) => {
@@ -233,7 +236,6 @@ select, input {
         goalList.appendChild(div);
       });
 
-      // Storico obiettivi completati
       const historyList = document.getElementById("historyList");
       historyList.innerHTML = "";
       history.slice().reverse().forEach(item => {
@@ -257,7 +259,6 @@ select, input {
           goalElement.classList.remove("show-delete");
         }
       });
-      // Supporto mouse
       goalElement.addEventListener("mousedown", e => { startX = e.clientX; });
       goalElement.addEventListener("mouseup", e => {
         let endX = e.clientX;
@@ -269,7 +270,6 @@ select, input {
       });
     }
 
-    // Avvio automatico se già loggato
     if (username) {
       showMainScreen();
     }
