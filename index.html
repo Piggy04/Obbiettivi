@@ -163,115 +163,185 @@ select, input {
     }
 
     function showMainScreen() {
-      document.getElementById("loginScreen").classList.add("hidden");
-      document.getElementById("mainScreen").classList.remove("hidden");
-      document.getElementById("welcomeMsg").innerText = "Ciao, " + username + "!";
-      updateUI();
-    }
+<!DOCTYPE html><html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obiettivi e Livelli</title>
+  <meta name="theme-color" content="#2575fc">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: linear-gradient(135deg,#6a11cb,#2575fc); margin:0; min-height:100vh; display:flex; align-items:flex-start; justify-content:center; color:#333; }
+    .container { background:#fff; margin-top:20px; width:90%; max-width:520px; padding:20px; border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+    h1,h2,h3 { text-align:center; margin: 0 0 12px; }
+    .goal { position:relative; background:#f4f7fb; padding:14px; margin:10px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); overflow:hidden; touch-action: pan-y; }
+    .goal-content { display:flex; justify-content:space-between; align-items:center; transition:transform .3s ease; }
+    .goal.show-delete .goal-content{ transform: translateX(-70px); }
+    .delete-btn { position:absolute; right:-60px; top:50%; transform:translateY(-50%); background:#f44336; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; transition:right .3s ease; }
+    .goal.show-delete .delete-btn{ right:10px; }
+    button { background:#4cafef; color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; transition: background .2s, transform .05s; }
+    button:hover{ background:#3b8bd4; } button:active{ transform: scale(0.98); }
+    input,select{ width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin:6px 0; }
+    .progress-bar{ height:24px; background:#ddd; border-radius:12px; overflow:hidden; margin:15px 0; }
+    .progress-fill{ height:100%; background:linear-gradient(90deg,#4caf50,#8bc34a); width:0%; transition: width .4s; }
+    .history-item{ background:#e8f5e9; padding:10px; margin:6px 0; border-radius:8px; }
+    .goal:focus{ outline:3px solid #2575fc; outline-offset:2px; }
+    @keyframes pop { 0%{transform:translate(-50%,-10px) scale(0.8); opacity:0} 50%{opacity:1} 100%{transform:translate(-50%,20px) scale(1); opacity:0} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="loginScreen">
+      <h1>Benvenuto!</h1>
+      <p>Inserisci il tuo nome:</p>
+      <input id="usernameInput" placeholder="Il tuo nome...">
+      <button id="enterBtn">Entra</button>
+    </div>
 
-    function addGoal() {
-      const goalText = document.getElementById("goalInput").value.trim();
-      const difficulty = parseInt(document.getElementById("difficulty").value);
-      if (goalText) {
-        goals.push({ text: goalText, points: difficulty, done: false });
-        localStorage.setItem("goals", JSON.stringify(goals));
-        document.getElementById("goalInput").value = "";
+    <div id="mainScreen" class="hidden">
+      <h1 id="welcomeMsg"></h1>
+      <h2>Punti: <span id="points">0</span> | Livello: <span id="level">1</span></h2>
+
+      <div class="progress-bar" role="progressbar" aria-label="Avanzamento livello" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+
+      <h3>Crea nuovo obiettivo</h3>
+      <input id="goalInput" placeholder="Scrivi un obiettivo...">
+      <select id="difficulty">
+        <option value="10">Facile (+10)</option>
+        <option value="20">Medio (+20)</option>
+        <option value="30">Difficile (+30)</option>
+        <option value="50">Molto difficile (+50)</option>
+      </select>
+      <button id="addBtn">Aggiungi</button>
+
+      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+        <button id="toggleGroupsBtn" aria-expanded="true" aria-controls="groups">Nascondi gruppi</button>
+        <button id="toggleHistoryBtn" aria-expanded="true" aria-controls="historyWrap">Nascondi storico</button>
+        <button id="installBtn" style="display:none">Installa app</button>
+        <button id="enablePush">Attiva promemoria</button>
+      </div>
+
+      <h3>I tuoi obiettivi</h3>
+      <div id="groups">
+        <h4>Facili</h4><div id="group-10"></div>
+        <h4>Medi</h4><div id="group-20"></div>
+        <h4>Difficili</h4><div id="group-30"></div>
+        <h4>Molto difficili</h4><div id="group-50"></div>
+      </div>
+
+      <h3>Storico obiettivi completati</h3>
+      <div id="historyWrap"><div id="historyList"></div></div>
+    </div>
+  </div>
+
+  <audio id="sndComplete" src="/complete.mp3" preload="auto"></audio>
+
+  <script>
+    // Stato
+    let goals = JSON.parse(localStorage.getItem("goals")) || [];
+    let history = JSON.parse(localStorage.getItem("history")) || [];
+    let points = parseInt(localStorage.getItem("points")) || 0;
+    let username = localStorage.getItem("username") || "";
+    const uiPrefs = JSON.parse(localStorage.getItem("uiPrefs") || '{"sound":true,"haptics":true}');
+    const publicVapidKey = 'SOSTITUISCI_CON_TUA_CHIAVE_VAPID_BASE64URL';
+
+    // Install prompt
+    let deferredPrompt=null;
+    window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').style.display='block'; });
+    document.getElementById('installBtn')?.addEventListener('click', async ()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; });
+
+    // UI helpers
+    function haptic(ms=20){ if ('vibrate' in navigator && uiPrefs.haptics) navigator.vibrate(ms); } // Vibration API
+    const sndEl = document.getElementById('sndComplete');
+    function playComplete(){ try{ if(uiPrefs.sound && sndEl){ sndEl.currentTime=0; sndEl.volume=0.2; sndEl.play(); } }catch(e){} haptic(20); }
+    function confettiBurst(){ const s=document.createElement('div'); s.textContent='🎉'; s.style.position='fixed'; s.style.left='50%'; s.style.top='20%'; s.style.fontSize='42px'; s.style.transform='translateX(-50%)'; s.style.animation='pop 900ms ease-out'; document.body.appendChild(s); setTimeout(()=>s.remove(),900); }
+
+    // Login & add
+    document.getElementById("enterBtn").addEventListener("click", saveUsername);
+    document.getElementById("addBtn").addEventListener("click", addGoal);
+
+    function saveUsername(){ const v=document.getElementById("usernameInput").value.trim(); if(v){ username=v; localStorage.setItem("username", username); showMainScreen(); } }
+    function showMainScreen(){ document.getElementById("loginScreen").classList.add("hidden"); document.getElementById("mainScreen").classList.remove("hidden"); document.getElementById("welcomeMsg").innerText="Ciao, "+username+"!"; setupToggles(); updateUI(); }
+
+    function addGoal(){ const t=document.getElementById("goalInput").value.trim(); const d=parseInt(document.getElementById("difficulty").value); if(t){ goals.push({text:t, points:d, done:false}); localStorage.setItem("goals", JSON.stringify(goals)); document.getElementById("goalInput").value=""; updateUI(); } }
+
+    function completeGoal(index){
+      if(!goals[index].done){
+        goals[index].done=true;
+        const before=points%100; points+=goals[index].points; const after=points%100;
+        playComplete(); if(after<before) confettiBurst();
+        history.push({text:goals[index].text, points:goals[index].points, date:new Date().toLocaleString()});
+        localStorage.setItem("points", points); localStorage.setItem("goals", JSON.stringify(goals)); localStorage.setItem("history", JSON.stringify(history));
         updateUI();
       }
     }
 
-    function completeGoal(index) {
-      if (!goals[index].done) {
-        goals[index].done = true;
-        points += goals[index].points;
-        history.push({
-          text: goals[index].text,
-          points: goals[index].points,
-          date: new Date().toLocaleString()
+    function deleteGoal(index){
+      const g=goals[index];
+      if(g.done){ points-=g.points; if(points<0) points=0; history=history.filter(it=> it.text!==g.text || it.points!==g.points); localStorage.setItem("points", points); localStorage.setItem("history", JSON.stringify(history)); }
+      goals.splice(index,1); localStorage.setItem("goals", JSON.stringify(goals)); updateUI();
+    }
+
+    function setupToggles(){
+      const tgb=document.getElementById("toggleGroupsBtn"), groupsEl=document.getElementById("groups");
+      tgb.addEventListener("click", ()=>{ const ex=tgb.getAttribute("aria-expanded")==="true"; tgb.setAttribute("aria-expanded", String(!ex)); groupsEl.hidden=ex; tgb.textContent=ex?"Mostra gruppi":"Nascondi gruppi"; });
+      const thb=document.getElementById("toggleHistoryBtn"), hw=document.getElementById("historyWrap");
+      thb.addEventListener("click", ()=>{ const ex=thb.getAttribute("aria-expanded")==="true"; thb.setAttribute("aria-expanded", String(!ex)); hw.hidden=ex; thb.textContent=ex?"Mostra storico":"Nascondi storico"; });
+    }
+
+    function updateUI(){
+      document.getElementById("points").innerText=points; const level=Math.floor(points/100)+1; document.getElementById("level").innerText=level;
+      const progress=(points%100); document.getElementById("progressFill").style.width=progress+"%"; document.querySelector(".progress-bar").setAttribute("aria-valuenow", String(progress));
+      ["10","20","30","50"].forEach(p=>{ const c=document.getElementById("group-"+p); if(c) c.innerHTML=""; });
+      const groups = Object.groupBy ? Object.groupBy(goals,g=>String(g.points)) : goals.reduce((a,g)=>((a[g.points]=a[g.points]||[]).push(g),a),{});
+      ["10","20","30","50"].forEach(p=>{
+        const list=groups?.[p]||[]; const container=document.getElementById("group-"+p); const header=container?.previousElementSibling;
+        if(container){ container.style.display=list.length?"":"none"; if(header && header.tagName==="H4") header.style.display=list.length?"":"none"; }
+        list.forEach(goal=>{
+          const div=document.createElement("div"); div.className="goal"; div.tabIndex=0;
+          const content=document.createElement("div"); content.className="goal-content";
+          const label=document.createElement("span"); label.style.textDecoration=goal.done?'line-through':'none'; label.textContent=`${goal.text} (${goal.points} pt)`;
+          const idx=goals.indexOf(goal);
+          const action = goal.done ? document.createTextNode("✅") : Object.assign(document.createElement("button"),{textContent:"Completa", onclick:()=>completeGoal(idx)});
+          content.append(label, action); div.appendChild(content);
+          const del=document.createElement("button"); del.className="delete-btn"; del.textContent="🗑️"; del.onclick=()=>deleteGoal(idx); div.appendChild(del);
+          addSwipeSupport(div); container.appendChild(div);
         });
-        localStorage.setItem("points", points);
-        localStorage.setItem("goals", JSON.stringify(goals));
-        localStorage.setItem("history", JSON.stringify(history));
-        updateUI();
-      }
+      });
+      const historyList=document.getElementById("historyList"); historyList.innerHTML="";
+      history.slice().reverse().forEach(item=>{ const div=document.createElement("div"); div.className="history-item"; div.innerText=`${item.text} (+${item.points} pt) - completato il ${item.date}`; historyList.appendChild(div); });
     }
 
-    function deleteGoal(index) {
-      const goal = goals[index];
-      if (goal.done) {
-        points -= goal.points;
-        if (points < 0) points = 0;
-        history = history.filter(item => item.text !== goal.text || item.points !== goal.points);
-        localStorage.setItem("points", points);
-        localStorage.setItem("history", JSON.stringify(history));
-      }
-      goals.splice(index, 1);
-      localStorage.setItem("goals", JSON.stringify(goals));
-      updateUI();
+    function addSwipeSupport(el){
+      let startX=0;
+      el.addEventListener("touchstart", e=>{ startX=e.touches[0].clientX; });
+      el.addEventListener("touchend", e=>{ let endX=e.changedTouches[0].clientX; if(startX-endX>50) el.classList.add("show-delete"); else el.classList.remove("show-delete"); });
+      el.addEventListener("mousedown", e=>{ startX=e.clientX; });
+      el.addEventListener("mouseup", e=>{ let endX=e.clientX; if(startX-endX>50) el.classList.add("show-delete"); else el.classList.remove("show-delete"); });
+      el.addEventListener("keydown", e=>{ if(e.key==="Delete") el.querySelector(".delete-btn")?.click(); if(e.key==="Escape") el.classList.remove("show-delete"); if(e.key==="Enter"||e.key===" ") el.classList.add("show-delete"); });
     }
 
-    function updateUI() {
-      document.getElementById("points").innerText = points;
-      let level = Math.floor(points / 100) + 1;
-      document.getElementById("level").innerText = level;
+    // Service worker registration
+    if('serviceWorker' in navigator){ window.addEventListener('load', ()=> navigator.serviceWorker.register('/sw.js')); }
 
-      let progress = (points % 100);
-      document.getElementById("progressFill").style.width = progress + "%";
-
-      const goalList = document.getElementById("goalList");
-      goalList.innerHTML = "";
-      goals.forEach((goal, index) => {
-        const div = document.createElement("div");
-        div.className = "goal";
-        div.innerHTML = `
-          <div class="goal-content">
-            <span style="text-decoration:${goal.done ? 'line-through' : 'none'}">
-              ${goal.text} (${goal.points} pt)
-            </span>
-            ${goal.done ? "✅" : `<button onclick=\"completeGoal(${index})\">Completa</button>`}
-          </div>
-          <button class="delete-btn" onclick="deleteGoal(${index})">🗑️</button>
-        `;
-        addSwipeSupport(div);
-        goalList.appendChild(div);
-      });
-
-      const historyList = document.getElementById("historyList");
-      historyList.innerHTML = "";
-      history.slice().reverse().forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.innerText = `${item.text} (+${item.points} pt) - completato il ${item.date}`;
-        historyList.appendChild(div);
-      });
+    // Push enable
+    document.getElementById('enablePush')?.addEventListener('click', enablePush);
+    async function enablePush(){
+      if(!('Notification' in window)) return alert('Notifiche non supportate');
+      const perm = await Notification.requestPermission();
+      if(perm!=='granted') return alert('Permesso negato');
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) });
+      await fetch('/.netlify/functions/subscribe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(sub) });
+      alert('Promemoria attivati!');
     }
+    function urlBase64ToUint8Array(s){ const p='='.repeat((4 - s.length % 4) % 4); const b=(s+p).replace(/-/g,'+').replace(/_/g,'/'); const r=atob(b); return Uint8Array.from([...r].map(c=>c.charCodeAt(0))); }
 
-    function addSwipeSupport(goalElement) {
-      let startX = 0;
-      goalElement.addEventListener("touchstart", e => {
-        startX = e.touches[0].clientX;
-      });
-      goalElement.addEventListener("touchend", e => {
-        let endX = e.changedTouches[0].clientX;
-        if (startX - endX > 50) {
-          goalElement.classList.add("show-delete");
-        } else {
-          goalElement.classList.remove("show-delete");
-        }
-      });
-      goalElement.addEventListener("mousedown", e => { startX = e.clientX; });
-      goalElement.addEventListener("mouseup", e => {
-        let endX = e.clientX;
-        if (startX - endX > 50) {
-          goalElement.classList.add("show-delete");
-        } else {
-          goalElement.classList.remove("show-delete");
-        }
-      });
-    }
-
-    if (username) {
-      showMainScreen();
-    }
-  </script></body>
+    if (username) showMainScreen();
+  </script>
+</body>
 </html>
+
