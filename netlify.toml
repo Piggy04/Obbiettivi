@@ -1,0 +1,10 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
+# Schedula l’invio giornaliero alle 18:00 UTC
+[functions."send-reminder"]
+  schedule = "0 18 * * *"
