@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Obiettivi e Livelli</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      color: #333;
+    }
+    .container {
+      background: #fff;
+      margin-top: 40px;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 440px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    h1, h2, h3 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .hidden { display: none; }.goal {
+  position: relative;
+  background: #f4f7fb;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.goal-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+.delete-btn {
+  position: absolute;
+  right: -60px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #f44336;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: right 0.3s ease;
+}
+.goal.show-delete .goal-content {
+  transform: translateX(-60px);
+}
+.goal.show-delete .delete-btn {
+  right: 10px;
+}
+button {
+  background: #4cafef;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover { background: #3b8bd4; }
+select, input {
+  margin: 5px 0;
+  padding: 8px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.progress-bar {
+  height: 20px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.history-item {
+  background: #e8f5e9;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+  </style>
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+</head>
+<body>
+  <div class="container">
+    <!-- Schermata di ingresso -->
+    <div id="loginScreen">
+      <h1>Benvenuto!</h1>
+      <p>Inserisci il tuo nome:</p>
+      <input type="text" id="usernameInput" placeholder="Il tuo nome...">
+      <button onclick="saveUsername()">Entra</button>
+    </div><!-- Schermata principale -->
+<div id="mainScreen" class="hidden">
+  <h1 id="welcomeMsg"></h1>
+  <h2>Punti: <span id="points">0</span> | Livello: <span id="level">1</span></h2>
+
+  <div class="progress-bar">
+    <div id="progressFill" class="progress-fill"></div>
+  </div>
+
+  <h3>Crea nuovo obiettivo</h3>
+  <input type="text" id="goalInput" placeholder="Scrivi un obiettivo...">
+  <select id="difficulty">
+    <option value="10">Facile (+10 punti)</option>
+    <option value="20">Medio (+20 punti)</option>
+    <option value="30">Difficile (+30 punti)</option>
+    <option value="50">Molto difficile (+50 punti)</option>
+  </select>
+  <button onclick="addGoal()">Aggiungi</button>
+
+  <h3>I tuoi obiettivi</h3>
+  <div id="goalList"></div>
+
+  <h3>Storico obiettivi completati</h3>
+  <div id="historyList"></div>
+</div>
+
+  </div>  <script>
+    let goals = JSON.parse(localStorage.getItem("goals")) || [];
+    let history = JSON.parse(localStorage.getItem("history")) || [];
+    let points = parseInt(localStorage.getItem("points")) || 0;
+    let username = localStorage.getItem("username") || "";
+
+    function saveUsername() {
+      const input = document.getElementById("usernameInput").value.trim();
+      if (input) {
+        username = input;
+        localStorage.setItem("username", username);
+        showMainScreen();
+      }
+    }
+
+    function showMainScreen() {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("mainScreen").classList.remove("hidden");
+      document.getElementById("welcomeMsg").innerText = "Ciao, " + username + "!";
+      updateUI();
+    }
+
+    function addGoal() {
+      const goalText = document.getElementById("goalInput").value.trim();
+      const difficulty = parseInt(document.getElementById("difficulty").value);
+      if (goalText) {
+        goals.push({ text: goalText, points: difficulty, done: false });
+        localStorage.setItem("goals", JSON.stringify(goals));
+        document.getElementById("goalInput").value = "";
+        updateUI();
+      }
+    }
+
+    function completeGoal(index) {
+      if (!goals[index].done) {
+        goals[index].done = true;
+        points += goals[index].points;
+        history.push({
+          text: goals[index].text,
+          points: goals[index].points,
+          date: new Date().toLocaleString()
+        });
+        localStorage.setItem("points", points);
+        localStorage.setItem("goals", JSON.stringify(goals));
+        localStorage.setItem("history", JSON.stringify(history));
+        updateUI();
+      }
+    }
+
+    function deleteGoal(index) {
+      const goal = goals[index];
+      if (goal.done) {
+        points -= goal.points;
+        if (points < 0) points = 0;
+        // rimuovi anche dallo storico
+        history = history.filter(item => item.text !== goal.text || item.points !== goal.points);
+        localStorage.setItem("points", points);
+        localStorage.setItem("history", JSON.stringify(history));
+      }
+      goals.splice(index, 1);
+      localStorage.setItem("goals", JSON.stringify(goals));
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById("points").innerText = points;
+      let level = Math.floor(points / 100) + 1;
+      document.getElementById("level").innerText = level;
+
+      // Barra di progresso verso il prossimo livello
+      let progress = (points % 100);
+      document.getElementById("progressFill").style.width = progress + "%";
+
+      // Lista obiettivi
+      const goalList = document.getElementById("goalList");
+      goalList.innerHTML = "";
+      goals.forEach((goal, index) => {
+        const div = document.createElement("div");
+        div.className = "goal";
+        div.innerHTML = `
+          <div class="goal-content">
+            <span style="text-decoration:${goal.done ? 'line-through' : 'none'}">
+              ${goal.text} (${goal.points} pt)
+            </span>
+            ${goal.done ? "✅" : `<button onclick=\"completeGoal(${index})\">Completa</button>`}
+          </div>
+          <button class="delete-btn" onclick="deleteGoal(${index})">🗑️</button>
+        `;
+        addSwipeSupport(div);
+        goalList.appendChild(div);
+      });
+
+      // Storico obiettivi completati
+      const historyList = document.getElementById("historyList");
+      historyList.innerHTML = "";
+      history.slice().reverse().forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerText = `${item.text} (+${item.points} pt) - completato il ${item.date}`;
+        historyList.appendChild(div);
+      });
+    }
+
+    function addSwipeSupport(goalElement) {
+      let startX = 0;
+      goalElement.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+      });
+      goalElement.addEventListener("touchend", e => {
+        let endX = e.changedTouches[0].clientX;
+        if (startX - endX > 50) {
+          goalElement.classList.add("show-delete");
+        } else {
+          goalElement.classList.remove("show-delete");
+        }
+      });
+      // Supporto mouse
+      goalElement.addEventListener("mousedown", e => { startX = e.clientX; });
+      goalElement.addEventListener("mouseup", e => {
+        let endX = e.clientX;
+        if (startX - endX > 50) {
+          goalElement.classList.add("show-delete");
+        } else {
+          goalElement.classList.remove("show-delete");
+        }
+      });
+    }
+
+    // Avvio automatico se già loggato
+    if (username) {
+      showMainScreen();
+    }
+  </script></body>
+</html>
