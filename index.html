@@ -3,53 +3,119 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Obiettivi e Livelli</title>
+<title>Obiettivi Avanzati</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    margin: 0; padding: 0; min-height: 100vh;
-    display: flex; justify-content: center; align-items: flex-start; color: #333;
-  }
-  .container {
-    background: #fff; margin-top: 20px; padding: 20px;
-    border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    width: 90%; max-width: 520px; animation: fadeIn 0.5s ease-in-out;
-  }
-  @keyframes fadeIn {
-    from {opacity: 0; transform: translateY(20px);}
-    to {opacity: 1; transform: translateY(0);}
-  }
-  h1, h2, h3, h4 { text-align: center; margin-bottom: 12px; }
-  .goal {
-    background: #f4f7fb; padding: 14px; margin: 10px 0;
-    border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .goal[done] span { text-decoration: line-through; color: #888; }
-  button {
-    background: #4cafef; border: none; padding: 10px 16px; border-radius: 8px;
-    color: white; cursor: pointer; transition: background 0.2s, transform 0.05s ease;
-    font-size: 1rem;
-  }
-  button:hover { background: #3b8bd4; }
-  button:active { transform: scale(0.98); }
-  select, input {
-    width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;
-    margin: 6px 0; font-size: 1rem;
-  }
-  .progress-bar {
-    height: 24px; background: #ddd; border-radius: 12px; overflow: hidden;
-    margin: 15px 0;
-  }
-  .progress-fill {
-    height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a);
-    width: 0%; transition: width 0.4s ease;
-  }
-  .history-item {
-    background: #e8f5e9; padding: 10px; margin: 6px 0; border-radius: 8px;
-    font-size: 0.95rem;
-  }
+:root {
+  --primary: #2575fc;
+  --bg: #fff;
+  --fg: #333;
+  --card: #f4f7fb;
+  --accent: #4cafef;
+  --done: #c8e6c9;
+  --focus: #2575fc;
+}
+body.dark {
+  --primary: #141850;
+  --bg: #23244D;
+  --fg: #f2f2f2;
+  --card: #1d3052;
+  --accent: #57d4eb;
+  --done: #295649;
+  --focus: #8bc34a;
+}
+body {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: var(--fg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0; min-height: 100vh;
+  display: flex; justify-content: center; align-items: flex-start;
+  transition: background .2s;
+}
+.container {
+  background: var(--bg); margin: 30px 0 0 0; padding: 18px;
+  border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  width: 95vw; max-width: 480px; animation: fadeIn .5s;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: background .2s, color .2s;
+}
+@keyframes fadeIn {from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);}}
+h1, h2, h3, h4 { text-align: center;}
+#streakInfo{ display: flex; align-items:center; justify-content: center; gap:6px; font-size:19px;}
+#stats { text-align: center; margin-bottom: 10px; font-size: 1.1em;}
+#filterBar{ display:flex; justify-content:center; gap:12px; margin: 6px 0; flex-wrap:wrap;}
+#filterBar button {
+  font-size:.98em; background: var(--card); color: var(--fg); border: 1.5px solid var(--primary);
+  font-weight: 550; padding: 6px 12px; border-radius: 14px; cursor:pointer; transition:.15s;
+}
+#filterBar button.selected { background: var(--accent); color:#fff; border-color: var(--focus);}
+.goal {
+  position: relative; background: var(--card); padding: 12px 12px 12px 8px; margin: 8px 0;
+  border-radius: 10px; box-shadow: 0 1.5px 4px rgba(0,0,0,.07);
+  font-size: 1rem; overflow:hidden; min-height:42px;
+  user-select:none; touch-action: pan-y;
+  display: flex; align-items: center; gap: 12px;
+}
+.goal[done] span { text-decoration: line-through; color: #689f38; }
+.goal span { flex:1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal .count-btn {
+  background: var(--accent); color: #fff; font-size: 1.18em; border-radius: 7px; margin:0 7px 0 0; border:none; width:29px; height:29px;
+}
+.goal .delete-btn {
+  background: #f44336; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1em;
+  margin-left:5px; z-index: 10;
+}
+.goal button[disabled] { opacity:.65; cursor: default;}
+.goal-counters { font-weight: 600; font-size: .98em; min-width:60px; text-align:right; }
+.goal-cat { font-size:.86em; color:#4cafef; margin-right:10px; }
+.goal-type { font-size:.88em; color:#888; margin-left:5px; }
+button {
+  background: var(--accent); border: none; padding: 10px 15px; border-radius: 8px;
+  color: white; cursor: pointer; font-size: 1rem; transition: background 0.15s, transform 0.07s;
+}
+button:hover { background: var(--primary);}
+button:active { transform: scale(0.97); }
+select, input[type='text'], input[type='number'], select.category-select {
+  width:100%; padding:10px; border-radius:6px; border:1px solid #b7b7b7; font-size:1rem; margin:6px 0;
+  background:var(--bg); color:var(--fg); transition:background .18s, color .18s;
+}
+#footer {
+  background: var(--card); margin-top: 22px; padding: 12px 0 4px 0; border-radius: 9px;
+  text-align: center; width: 100%;
+}
+.theme-switch {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+}
+.theme-switch input[type="checkbox"] { display: none; }
+.theme-slider {
+  width: 35px; height: 17px; background: #b3c3de; border-radius: 14px; display: inline-block; position: relative;
+  vertical-align: middle; transition: .14s;
+}
+.theme-slider:before {
+  content: ''; position: absolute; left: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.07); transition: left .14s;
+}
+.theme-switch input:checked + .theme-slider { background: #7ebdff; }
+.theme-switch input:checked + .theme-slider:before { left: 20px; }
+.progress-bar {
+  height: 22px; background: #ccd7e7; border-radius: 11px; overflow: hidden;
+  margin: 15px 0;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); width: 0%;
+  transition: width 0.4s;
+}
+.history-item {
+  background: var(--done); padding: 8px; margin: 6px 0; border-radius: 8px; font-size: 0.95rem;
+  position: relative;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.history-item button.delete-history-btn {
+  background: #f44336; border: none; color: white; padding: 5px 10px; border-radius: 6px;
+  cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
+}
+@media (max-width: 500px) {
+  .container { max-width: 97vw; padding: 8px; }
+}
 </style>
 </head>
 <body>
@@ -62,15 +128,25 @@
     </div>
 
     <div id="mainScreen" style="display:none;">
-      <h1 id="welcomeMsg"></h1>
-      <h2>Punti: <span id="points">0</span> | Livello: <span id="level">1</span></h2>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <div id="streakInfo"></div>
+        <div id="stats"></div>
+      </div>
 
+      <h2>Punti: <span id="points">0</span> | Livello: <span id="level">1</span></h2>
       <div class="progress-bar" role="progressbar" aria-label="Avanzamento livello" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="progressFill" class="progress-fill"></div>
       </div>
 
       <h3>Crea nuovo obiettivo</h3>
       <input id="goalInput" placeholder="Scrivi un obiettivo..." />
+      <select id="categorySelect"></select>
+      <select id="goalTypeSelect">
+        <option value="single">Normale / Libero</option>
+        <option value="daily">Giornaliero</option>
+        <option value="weekly">Settimanale</option>
+      </select>
+      <input id="goalTarget" type="number" min="1" max="99" placeholder="Numero di completamenti (lascia vuoto per singolo)" />
       <select id="difficulty">
         <option value="10">Facile (+10 punti)</option>
         <option value="20">Medio (+20 punti)</option>
@@ -79,152 +155,400 @@
       </select>
       <button id="addBtn">Aggiungi</button>
 
-      <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
-        <button id="toggleGroupsBtn" aria-expanded="true" aria-controls="groups">Nascondi gruppi</button>
-        <button id="toggleHistoryBtn" aria-expanded="true" aria-controls="history">Nascondi storico</button>
-      </div>
+      <div id="filterBar"></div>
 
       <h3>I tuoi obiettivi</h3>
-      <div id="groups">
-        <h4>Facili</h4><div id="group-10"></div>
-        <h4>Medi</h4><div id="group-20"></div>
-        <h4>Difficili</h4><div id="group-30"></div>
-        <h4>Molto difficili</h4><div id="group-50"></div>
-      </div>
+      <div id="goalGroups"></div>
 
       <h3>Storico obiettivi completati</h3>
       <div id="history"></div>
     </div>
+    <div id="footer">
+      <label class="theme-switch">
+        <input type="checkbox" id="themeToggle" />
+        <span class="theme-slider"></span>
+        <span style="font-size:17px;">🌙/☀️</span>
+      </label>
+    </div>
   </div>
 
-  <script>
-    let goals = JSON.parse(localStorage.getItem("goals")) || [];
-    let history = JSON.parse(localStorage.getItem("history")) || [];
-    let points = parseInt(localStorage.getItem("points")) || 0;
-    let username = localStorage.getItem("username") || "";
+<script>
+let goals = JSON.parse(localStorage.getItem("goals")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
+let points = parseInt(localStorage.getItem("points")) || 0;
+let username = localStorage.getItem("username") || "";
+let streak = JSON.parse(localStorage.getItem("streak")) || { count: 0, lastDay: null };
+let filter = localStorage.getItem("filter") || 'ALL';
+let categories = JSON.parse(localStorage.getItem("categories")) || ["Generale"];
 
-    document.getElementById("enterBtn").onclick = () => {
-      const name = document.getElementById("usernameInput").value.trim();
-      if (!name) return alert("Scrivi il tuo nome!");
-      username = name;
-      localStorage.setItem("username", username);
-      showMainScreen();
+const userTheme = localStorage.getItem('theme') || 'light';
+if (userTheme === 'dark') document.body.classList.add('dark');
+document.getElementById("themeToggle").checked = (userTheme === 'dark');
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById("enterBtn").onclick = () => {
+    const name = document.getElementById("usernameInput").value.trim();
+    if (!name) return alert("Scrivi il tuo nome!");
+    username = name;
+    localStorage.setItem("username", username);
+    showMainScreen();
+  };
+
+  document.getElementById("addBtn").onclick = () => {
+    const goalText = document.getElementById("goalInput").value.trim();
+    const category = document.getElementById("categorySelect").value;
+    const type = document.getElementById("goalTypeSelect").value;
+    const difficulty = parseInt(document.getElementById("difficulty").value);
+    const targetNum = parseInt(document.getElementById("goalTarget").value);
+
+    if (!goalText) return alert("Scrivi un obiettivo!");
+    if (category === "__new") {
+      alert("Seleziona o crea una categoria valida!");
+      return;
+    }
+    let g = {
+      text: goalText, points: difficulty, category, 
+      type, target: targetNum > 1 ? targetNum : 1,
+      count: 0, done: false, lastUpdate: todayUnit(type), created: Date.now()
     };
+    goals.push(g);
+    saveData();
+    document.getElementById("goalInput").value = "";
+    document.getElementById("goalTarget").value = "";
+    updateUI();
+  };
 
-    document.getElementById("addBtn").onclick = () => {
-      const goalText = document.getElementById("goalInput").value.trim();
-      const difficulty = parseInt(document.getElementById("difficulty").value);
-      if (!goalText) return alert("Scrivi un obiettivo!");
-      goals.push({ text: goalText, points: difficulty, done: false });
-      localStorage.setItem("goals", JSON.stringify(goals));
-      document.getElementById("goalInput").value = "";
-      updateUI();
-    };
+  document.getElementById("goalTypeSelect").onchange = function(){
+    const v = this.value;
+    document.getElementById("goalTarget").style.display = (v==="single") ? "none" : "block";
+  };
 
-    document.getElementById("toggleGroupsBtn").onclick = () => toggleVisibility("groups", "toggleGroupsBtn", "gruppi");
-    document.getElementById("toggleHistoryBtn").onclick = () => toggleVisibility("history", "toggleHistoryBtn", "storico");
+  populateCategorySelect();
+  makeFilterBar();
+  setupThemeToggle();
+  document.getElementById("goalTypeSelect").dispatchEvent(new Event("change"));
 
-    function toggleVisibility(sectionId, buttonId, name) {
-      const section = document.getElementById(sectionId);
-      const button = document.getElementById(buttonId);
-      if (section.style.display === "none") {
-        section.style.display = "";
-        button.setAttribute("aria-expanded", "true");
-        button.textContent = "Nascondi " + name;
+  if (username) showMainScreen();
+});
+
+function populateCategorySelect() {
+  const select = document.getElementById("categorySelect");
+  select.innerHTML = "";
+  categories.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    select.appendChild(opt);
+  });
+  const addOpt = document.createElement("option");
+  addOpt.value = "__new";
+  addOpt.textContent = "Aggiungi categoria...";
+  select.appendChild(addOpt);
+
+  select.onchange = e => {
+    if (e.target.value === "__new") {
+      const newCat = prompt("Scrivi il nome della nuova categoria:");
+      if (newCat) {
+        if (!categories.includes(newCat)) {
+          categories.push(newCat);
+          localStorage.setItem("categories", JSON.stringify(categories));
+          populateCategorySelect();
+          select.value = newCat;
+        } else {
+          alert("Categoria già esistente.");
+          select.value = categories[0];
+        }
       } else {
-        section.style.display = "none";
-        button.setAttribute("aria-expanded", "false");
-        button.textContent = "Mostra " + name;
+        select.value = categories[0];
       }
     }
+  };
+}
 
-    function showMainScreen() {
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("mainScreen").style.display = "";
-      document.getElementById("welcomeMsg").textContent = "Ciao, " + username + "!";
-      updateUI();
+function makeFilterBar() {
+  const div = document.getElementById("filterBar");
+  div.innerHTML = "";
+  const filters = [
+    { code: 'ALL', label: 'Tutti' },
+    { code: 'SINGLE', label: 'Normali' },
+    { code: 'DAILY', label: 'Giornalieri' },
+    { code: 'WEEK', label: 'Settimanali' },
+    { code: 'TODO', label: 'Da fare' },
+    { code: 'DONE', label: 'Completati' }    
+  ];
+  filters.forEach(f => {
+    const b = document.createElement("button");
+    b.textContent = f.label;
+    b.className = (filter === f.code) ? "selected" : "";
+    b.onclick = () => { filter = f.code; localStorage.setItem("filter", filter); updateUI(); };
+    div.appendChild(b);
+  });
+}
+
+function saveData() {
+  localStorage.setItem("goals", JSON.stringify(goals));
+  localStorage.setItem("history", JSON.stringify(history));
+  localStorage.setItem("points", points.toString());
+  localStorage.setItem("streak", JSON.stringify(streak));
+  localStorage.setItem("categories", JSON.stringify(categories));
+}
+// --- Resetta ricorrenza al cambio giorno/settimana
+function todayUnit(type) {
+  const now = new Date();
+  if (type==="daily") return now.toISOString().slice(0,10); // yyyy-mm-dd
+  if (type==="weekly") {
+    // anno-settimana: es. 2025-W39
+    let y = now.getFullYear();
+    let week = Math.ceil((((now - new Date(y,0,1)) / 86400000) + new Date(y,0,1).getDay()+1)/7);
+    return `${y}-W${week}`;
+  }
+  return ""; // single
+}
+
+function resetDailyWeeklyCounters() {
+  const today = todayUnit("daily"), week = todayUnit("weekly");
+  goals.forEach(g => {
+    if (!g.type || g.type==="single") return;
+    if (g.type==="daily" && g.lastUpdate!==today) {
+      g.count = 0; g.done = false; g.lastUpdate = today;
     }
+    if (g.type==="weekly" && g.lastUpdate!==week) {
+      g.count = 0; g.done = false; g.lastUpdate = week;
+    }
+  });
+  saveData();
+}
 
-    function updateUI() {
-      document.getElementById("points").textContent = points;
-      const level = Math.floor(points / 100) + 1;
-      document.getElementById("level").textContent = level;
-      const progress = points % 100;
-      document.getElementById("progressFill").style.width = progress + "%";
-      document.getElementById("progressFill").parentElement.setAttribute("aria-valuenow", progress);
+function showMainScreen() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainScreen").style.display = "";
+  updateUI();
+}
+function updateStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const completatiOggi = history.filter(h => h.date && h.date.startsWith(today)).length > 0;
+  let streakCount = streak.count;
+  if (streak.lastDay !== today) {
+    if (completatiOggi) {
+      if (streak.lastDay) {
+        let d1 = new Date(streak.lastDay), d2 = new Date(today);
+        if ((d2 - d1) / 86400000 === 1) streakCount += 1;
+        else streakCount = 1;
+      } else {
+        streakCount = 1;
+      }
+      streak = { count: streakCount, lastDay: today };
+    } else if (streak.lastDay && (new Date(today) - new Date(streak.lastDay)) / 86400000 >= 1) {
+      streakCount = 0;
+      streak = { count: 0, lastDay: streak.lastDay };
+    }
+    localStorage.setItem("streak", JSON.stringify(streak));
+  }
+  const info = document.getElementById('streakInfo');
+  info.innerHTML = streak.count > 0
+    ? `<span style="font-size:1.2em;">🔥</span>&nbsp;<b>Streak:</b> ${streak.count} ${streak.count===1 ? "giorno" : "giorni"}`
+    : `<span style="color:#aaa;">Nessuna streak in corso</span>`;
+}
+function updateStats() {
+  const now = Date.now(), MS_DAY = 86400000;
+  const today = new Date().toISOString().slice(0, 10);
+  let doneToday = 0, done7 = 0;
+  history.forEach(h => {
+    const day = h.date ? h.date.slice(0, 10) : "";
+    if (day === today) doneToday++;
+    const then = new Date(day).getTime();
+    if (now - then < 7 * MS_DAY) done7++;
+  });
+  document.getElementById("stats").innerHTML = `Completati oggi: <b>${doneToday}</b> &nbsp;&nbsp;&nbsp; Ultimi 7gg: <b>${done7}</b>`;
+}
+function updateUI() {
+  resetDailyWeeklyCounters();
 
-      ["10","20","30","50"].forEach(pointValue => {
-        const container = document.getElementById("group-" + pointValue);
-        container.innerHTML = "";
-        const filtered = goals.filter(g => g.points == parseInt(pointValue));
-        if (filtered.length === 0) { 
-          const h4 = container.previousElementSibling;
-          h4.style.display = "none";
-          container.style.display = "none";
-          return;
+  document.getElementById("points").textContent = points;
+  const level = Math.floor(points / 100) + 1;
+  document.getElementById("level").textContent = level;
+  const progress = points % 100;
+  const progBar = document.getElementById("progressFill");
+  progBar.style.width = progress + "%";
+  progBar.parentElement.setAttribute("aria-valuenow", progress);
+
+  makeFilterBar();
+  updateStreak();
+  updateStats();
+
+  const filtersMap = {
+    ALL: g => true,
+    TODO: g => !g.done,
+    DONE: g => g.done,
+    SINGLE: g=>!g.type||g.type==="single",
+    DAILY: g=>g.type==="daily",
+    WEEK: g=>g.type==="weekly"
+  };
+
+  const groupByCategory = {};
+  goals.forEach(g => {
+    if(!groupByCategory[g.category]) groupByCategory[g.category] = [];
+    groupByCategory[g.category].push(g);
+  });
+
+  const goalGroupsDiv = document.getElementById("goalGroups");
+  goalGroupsDiv.innerHTML = "";
+
+  for (const cat of categories) {
+    const list = (groupByCategory[cat] || []).filter(filtersMap[filter]||(()=>true));
+    if (list.length === 0) continue;
+
+    const catHeader = document.createElement("h4");
+    catHeader.textContent = cat;
+    goalGroupsDiv.appendChild(catHeader);
+
+    ["10","20","30","50"].forEach(dif => {
+      const filtered = list.filter(g => g.points == parseInt(dif));
+      if (filtered.length === 0) return;
+
+      const difDiv = document.createElement("div");
+      difDiv.style.marginBottom = "12px";
+      const difTitle = document.createElement("h5");
+      difTitle.textContent = `Difficoltà: ${difficultyLabel(dif)}`;
+      difTitle.style.fontWeight = "600";
+      difTitle.style.fontSize = "1em";
+      difDiv.appendChild(difTitle);
+
+      filtered.forEach(goal => {
+        const div = document.createElement("div");
+        div.className = "goal";
+        if (goal.done) div.setAttribute("done", "");
+        div.tabIndex = 0;
+
+        // ----- Conteggio numerico, se serve -----
+        let counterElem = "";
+        if (goal.target && goal.target > 1) {
+          counterElem = document.createElement("span");
+          counterElem.className = "goal-counters";
+          counterElem.textContent = `${goal.count}/${goal.target}`;
+          div.appendChild(counterElem);
+
+          let plusBtn = document.createElement("button");
+          plusBtn.textContent = "+";
+          plusBtn.className = "count-btn";
+          plusBtn.disabled = goal.done;
+          plusBtn.onclick = ()=>{
+            if (goal.done) return;
+            goal.count = (goal.count||0)+1;
+            if (goal.count>=goal.target) {
+              goal.count = goal.target;
+              goal.done = true;
+              points += goal.points;
+              history.push({ text: goal.text, points: goal.points, date: new Date().toISOString(), category: goal.category, type: goal.type });
+            }
+            saveData();
+            updateUI();
+            vibra();
+          };
+          div.appendChild(plusBtn);
         }
-        container.previousElementSibling.style.display = "";
-        container.style.display = "";
 
-        filtered.forEach((goal, idx) => {
-          const div = document.createElement("div");
-          div.className = "goal";
-          if (goal.done) div.setAttribute("done", "");
-          const span = document.createElement("span");
-          span.textContent = `${goal.text} (${goal.points} pt)`;
-          div.appendChild(span);
+        // -- Testo principale e tipologia
+        const span = document.createElement("span");
+        span.innerHTML = goal.text +
+          (goal.type && goal.type!=="single" ? `<span class="goal-type">${goal.type==="daily"?"giornaliero":"settimanale"}</span>` : "");
+        div.appendChild(span);
 
+        // ----- Completa (solo se non numerico) -----
+        if (!goal.target || goal.target === 1) {
           const btn = document.createElement("button");
-          if (!goal.done) {
+          if(!goal.done) {
             btn.textContent = "Completa";
             btn.onclick = () => {
               goal.done = true;
               points += goal.points;
-              history.push({ text: goal.text, points: goal.points, date: new Date().toLocaleString() });
+              history.push({ text: goal.text, points: goal.points, date: new Date().toISOString(), category: goal.category, type: goal.type });
               saveData();
               updateUI();
+              vibra();
             };
           } else {
             btn.textContent = "✅";
             btn.disabled = true;
+            btn.style.opacity = ".6";
           }
           div.appendChild(btn);
+        }
 
-          const delBtn = document.createElement("button");
-          delBtn.textContent = "🗑️";
-          delBtn.onclick = () => {
-            if (goal.done) {
+        // ----- Pulsante DELETE sempre visibile -----
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "🗑️";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = () => {
+          if (confirm("Vuoi davvero eliminare questo obiettivo?")) {
+            if(goal.done){
               points -= goal.points;
-              history = history.filter(h => !(h.text === goal.text && h.points === goal.points));
+              history = history.filter(h => !(h.text === goal.text && h.points === goal.points && h.date === goal.date));
             }
-            goals.splice(goals.indexOf(goal), 1);
+            goals.splice(goals.indexOf(goal),1);
             saveData();
             updateUI();
-          };
-          div.appendChild(delBtn);
+          }
+        };
+        div.appendChild(delBtn);
 
-          container.appendChild(div);
-        });
+        goalGroupsDiv.appendChild(div);
       });
+    });
+  }
 
-      // Storico
-      const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = "";
-      history.slice().reverse().forEach(h => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        div.textContent = `${h.text} (+${h.points} pt) - completato il ${h.date}`;
-        historyDiv.appendChild(div);
-      });
+  // Storico con cestino rimuovibile
+  const historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = "";
+  history.slice().reverse().forEach(h => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.textContent = `${h.text} (+${h.points} pt) - completato il ${formatDate(h.date)}`;
+
+    const btn = document.createElement("button");
+    btn.textContent = "🗑️";
+    btn.className = "delete-history-btn";
+    btn.onclick = () => {
+      if (confirm("Vuoi davvero rimuovere questa voce dello storico?")) {
+        history = history.filter(item => item !== h);
+        saveData();
+        updateUI();
+      }
+    };
+
+    div.appendChild(btn);
+    historyDiv.appendChild(div);
+  });
+
+}
+
+function difficultyLabel(code) {
+  switch(code) {
+    case "10": return "Facile";
+    case "20": return "Medio";
+    case "30": return "Difficile";
+    case "50": return "Molto difficile";
+    default: return "";
+  }
+}
+function vibra() { if ('vibrate' in navigator) navigator.vibrate(30); }
+function formatDate(str) {
+  if (!str) return "";
+  const d = new Date(str);
+  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "2-digit" }) +
+    " " + d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+}
+function setupThemeToggle() {
+  document.getElementById('themeToggle').onchange = function () {
+    if(this.checked) {
+      document.body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-
-    function saveData() {
-      localStorage.setItem("goals", JSON.stringify(goals));
-      localStorage.setItem("history", JSON.stringify(history));
-      localStorage.setItem("points", points.toString());
-    }
-
-    if (username) showMainScreen();
-  </script>
+  };
+}
+</script>
 </body>
 </html>
